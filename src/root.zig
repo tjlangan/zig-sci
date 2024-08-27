@@ -1,13 +1,11 @@
-//! By convention, root.zig is the root source file when making a library. If
-//! you are making an executable, the convention is to delete this file and
-//! start with main.zig instead.
-const std = @import("std");
-const testing = std.testing;
+//pub const matrix = @import("linalg/matrix.zig").Matrix;
+pub const errors = @import("linalg/errors.zig").LinalgError;
 
-export fn add(a: i32, b: i32) i32 {
-    return a + b;
-}
+pub const sub2ind = @import("linalg/sub2ind.zig").sub2ind;
+pub const shape2cap = @import("linalg/shape2cap.zig").shape2cap;
+pub const mult = @import("linalg/mult.zig").mult;
+pub const at = @import("linalg/at.zig").at;
 
-test "basic add functionality" {
-    try testing.expect(add(3, 7) == 10);
+test {
+    @import("std").testing.refAllDeclsRecursive(@This());
 }
