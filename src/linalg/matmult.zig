@@ -4,7 +4,7 @@ const Allocator = std.mem.Allocator;
 const Error = @import("errors.zig").LinalgError;
 const sub2ind = @import("sub2ind.zig").sub2ind;
 
-pub fn mult(comptime T: type, allocator: Allocator, A: []const T, shapeA: []const usize, B: []const T, shapeB: []const usize) Error![]T {
+pub fn matmult(comptime T: type, allocator: Allocator, A: []const T, shapeA: []const usize, B: []const T, shapeB: []const usize) Error![]T {
     // TODO: Implement n dimension matrix multiplication. currently only supports 2D
     if (shapeA.len != 2 or shapeB.len != 2) return Error.Unimplemented;
 
@@ -60,7 +60,7 @@ test "2x3 * 3x2" {
     const B = [_]u32{ 7, 8, 9, 10, 11, 12 };
     const shapeB = [_]usize{ 3, 2 };
 
-    const C = try mult(u32, std.testing.allocator, &A, &shapeA, &B, &shapeB);
+    const C = try matmult(u32, std.testing.allocator, &A, &shapeA, &B, &shapeB);
     defer std.testing.allocator.free(C);
 
     try std.testing.expectEqual(4, C.len);
@@ -86,7 +86,7 @@ test "1x3 * 3x1" {
     const B = [_]u32{ 4, 5, 6 };
     const shapeB = [_]usize{ 3, 1 };
 
-    const C = try mult(u32, std.testing.allocator, &A, &shapeA, &B, &shapeB);
+    const C = try matmult(u32, std.testing.allocator, &A, &shapeA, &B, &shapeB);
     defer std.testing.allocator.free(C);
 
     try std.testing.expectEqual(1, C.len);
@@ -110,7 +110,7 @@ test "3x1 * 1x3" {
     const B = [_]u32{ 4, 5, 6 };
     const shapeB = [_]usize{ 1, 3 };
 
-    const C = try mult(u32, std.testing.allocator, &A, &shapeA, &B, &shapeB);
+    const C = try matmult(u32, std.testing.allocator, &A, &shapeA, &B, &shapeB);
     defer std.testing.allocator.free(C);
 
     try std.testing.expectEqual(9, C.len);
@@ -128,10 +128,10 @@ test "3x1 * 1x3" {
 
 test "errors" {
     // test with dims greater than 2
-    var C = mult(u32, std.testing.allocator, &.{1}, &.{ 1, 1, 1 }, &.{1}, &.{ 1, 1, 1 });
+    var C = matmult(u32, std.testing.allocator, &.{1}, &.{ 1, 1, 1 }, &.{1}, &.{ 1, 1, 1 });
     try std.testing.expectError(Error.Unimplemented, C);
 
     // test if dimension are correct for multiplication
-    C = mult(u32, std.testing.allocator, &.{ 1, 2, 3, 4, 5, 6 }, &.{ 3, 2 }, &.{ 1, 2, 3, 4, 5, 6 }, &.{ 3, 2 });
+    C = matmult(u32, std.testing.allocator, &.{ 1, 2, 3, 4, 5, 6 }, &.{ 3, 2 }, &.{ 1, 2, 3, 4, 5, 6 }, &.{ 3, 2 });
     try std.testing.expectError(Error.Shape, C);
 }
