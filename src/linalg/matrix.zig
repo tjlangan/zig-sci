@@ -2,6 +2,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 
 const Error = @import("errors.zig").LinalgError;
+const shape2cap = @import("shape2cap.zig").shape2cap;
 
 pub fn Matrix(comptime T: type) type {
     return struct {
@@ -30,11 +31,9 @@ pub fn Matrix(comptime T: type) type {
 
         pub fn from(allocator: Allocator, data: []const T, shape: []const usize) Error!Self {
             // make prod and sum of slice a function
-            var prod: usize = 1;
-            for (shape) |len| {
-                prod *= len;
-            }
-            if (prod != data.len) {
+            const cap = shape2cap(shape);
+
+            if (cap != data.len) {
                 return Error.Shape;
             }
 

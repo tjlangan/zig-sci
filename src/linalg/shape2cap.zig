@@ -1,16 +1,15 @@
 const std = @import("std");
 
+const prod = @import("prod.zig").prod;
+
 pub fn shape2cap(shape: []const usize) usize {
     if (shape.len == 0) {
         return 0;
     }
 
-    var capacity: usize = 1;
-    for (shape) |length| {
-        capacity *= length;
-    }
-
-    return capacity;
+    return prod(usize, shape, null, null) catch {
+        return 0;
+    };
 }
 
 test "shape2capacity" {
