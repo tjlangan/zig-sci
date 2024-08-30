@@ -3,6 +3,7 @@ const Allocator = std.mem.Allocator;
 
 const Error = @import("errors.zig").LinalgError;
 const shape2cap = @import("shape2cap.zig").shape2cap;
+const fill = @import("fill.zig").fill;
 
 pub fn Matrix(comptime T: type) type {
     return struct {
@@ -51,6 +52,22 @@ pub fn Matrix(comptime T: type) type {
                 .data = data_copy,
             };
         }
+
+        pub fn zeros(allocator: Allocator, shape: []const usize) Error!Self {
+            const matrix = try init(allocator, shape);
+
+            fill(T, matrix.data, 0);
+
+            return matrix;
+        }
+
+        pub fn ones(allocator: Allocator, shape: []const usize) Error!Self {
+            const matrix = try init(allocator, shape);
+
+            fill(T, matrix.data, 1);
+
+            return matrix;
+        }
     };
 }
 
@@ -87,4 +104,36 @@ test "from" {
     try std.testing.expectEqual(4, mat.data[3]);
     try std.testing.expectEqual(5, mat.data[4]);
     try std.testing.expectEqual(6, mat.data[5]);
+}
+
+test "zeros" {
+    const allocator = std.testing.allocator;
+
+    const shape: [2]usize = [_]usize{ 2, 3 };
+
+    const mat = try Matrix(u32).zeros(allocator, &shape);
+    defer mat.deinit(allocator);
+
+    try std.testing.expectEqual(2, mat.shape[0]);
+    try std.testing.expectEqual(3, mat.shape[1]);
+
+    for (mat.data) |elem| {
+        try std.testing.expectEqual(0, elem);
+    }
+}
+
+test "ones" {
+    const allocator = std.testing.allocator;
+
+    const shape: [2]usize = [_]usize{ 2, 3 };
+
+    const mat = try Matrix(u32).ones(allocator, &shape);
+    defer mat.deinit(allocator);
+
+    try std.testing.expectEqual(2, mat.shape[0]);
+    try std.testing.expectEqual(3, mat.shape[1]);
+
+    for (mat.data) |elem| {
+        try std.testing.expectEqual(1, elem);
+    }
 }
