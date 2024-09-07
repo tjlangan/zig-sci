@@ -1,10 +1,10 @@
 const std = @import("std");
 
-const Error = @import("errors.zig").LinalgError;
-const sub2ind = @import("sub2ind.zig").sub2ind;
+const Error = @import("errors.zig").Error;
+const sub2idx = @import("sub2idx.zig").sub2idx;
 
 pub fn at(comptime T: type, items: []T, shape: []const usize, subs: []const usize) Error!*T {
-    const index = try sub2ind(shape, subs);
+    const index = try sub2idx(shape, subs);
     return &items[index];
 }
 

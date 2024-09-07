@@ -1,9 +1,9 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-const Error = @import("errors.zig").LinalgError;
+const Error = @import("errors.zig").Error;
 const shape2cap = @import("shape2cap.zig").shape2cap;
-const sub2ind = @import("sub2ind.zig").sub2ind;
+const sub2idx = @import("sub2idx.zig").sub2idx;
 const fill = @import("fill.zig").fill;
 
 pub fn Matrix(comptime T: type) type {
@@ -74,9 +74,9 @@ pub fn Matrix(comptime T: type) type {
             const matrix = try zeros(allocator, &.{ n, n });
 
             for (0..n) |ii| {
-                const ind = try sub2ind(matrix.shape, &.{ ii, ii });
+                const idx = try sub2idx(matrix.shape, &.{ ii, ii });
 
-                matrix.data[ind] = 1;
+                matrix.data[idx] = 1;
             }
 
             return matrix;

@@ -1,8 +1,8 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-const Error = @import("errors.zig").LinalgError;
-const sub2ind = @import("sub2ind.zig").sub2ind;
+const Error = @import("errors.zig").Error;
+const sub2idx = @import("sub2idx.zig").sub2idx;
 
 pub fn matrixMult(comptime T: type, allocator: Allocator, A: []const T, shapeA: []const usize, B: []const T, shapeB: []const usize) Error![]T {
     // TODO: Implement n dimension matrix multiplication. currently only supports 2D
@@ -27,16 +27,16 @@ pub fn matrixMult(comptime T: type, allocator: Allocator, A: []const T, shapeA: 
                 const subA = [_]usize{ ii, kk };
                 const subB = [_]usize{ kk, jj };
 
-                const indA = try sub2ind(shapeA, &subA);
-                const indB = try sub2ind(shapeB, &subB);
+                const idxA = try sub2idx(shapeA, &subA);
+                const idxB = try sub2idx(shapeB, &subB);
 
-                sum += A[indA] * B[indB];
+                sum += A[idxA] * B[idxB];
             }
 
             const subC = [_]usize{ ii, jj };
-            const indC = try sub2ind(&shapeC, &subC);
+            const idxC = try sub2idx(&shapeC, &subC);
 
-            C[indC] = sum;
+            C[idxC] = sum;
         }
     }
 

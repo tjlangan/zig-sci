@@ -1,6 +1,6 @@
 const std = @import("std");
 
-const Error = @import("errors.zig").LinalgError;
+const Error = @import("errors.zig").Error;
 
 pub fn scalarDiv(comptime T: type, items: []T, value: T, shape: ?[]const usize, dim: ?usize) Error!void {
     _ = shape;

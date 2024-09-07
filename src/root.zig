@@ -1,11 +1,7 @@
-//pub const matrix = @import("linalg/matrix.zig").Matrix;
-pub const errors = @import("linalg/errors.zig").LinalgError;
+const std = @import("std");
 
-pub const sub2ind = @import("linalg/sub2ind.zig").sub2ind;
-pub const shape2cap = @import("linalg/shape2cap.zig").shape2cap;
-pub const matrixMult = @import("linalg/matrixMult.zig").matrixMult;
-pub const at = @import("linalg/at.zig").at;
+pub const linalg = @import("linalg/linalg.zig");
 
 test {
-    @import("std").testing.refAllDeclsRecursive(@This());
+    std.testing.refAllDeclsRecursive(@This());
 }

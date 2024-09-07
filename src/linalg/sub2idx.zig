@@ -1,8 +1,8 @@
 const std = @import("std");
 
-const Error = @import("errors.zig").LinalgError;
+const Error = @import("errors.zig").Error;
 
-pub fn sub2ind(shape: []const usize, subscripts: []const usize) Error!usize {
+pub fn sub2idx(shape: []const usize, subscripts: []const usize) Error!usize {
     if (shape.len != subscripts.len) return Error.Shape;
 
     var index: usize = 0;
@@ -29,7 +29,7 @@ test "2x3" {
 
     // [0,0] = x[0] = 1
     var subscripts = [_]usize{ 0, 0 };
-    var index: usize = try sub2ind(&shape, &subscripts);
+    var index: usize = try sub2idx(&shape, &subscripts);
     try std.testing.expectEqual(0, index);
     try std.testing.expectEqual(1, x[index]);
     try std.testing.expectEqual(2, shape[0]);
@@ -39,7 +39,7 @@ test "2x3" {
 
     // [1,2] = x[5] = 6
     subscripts = [_]usize{ 1, 2 };
-    index = try sub2ind(&shape, &subscripts);
+    index = try sub2idx(&shape, &subscripts);
     try std.testing.expectEqual(5, index);
     try std.testing.expectEqual(6, x[index]);
     try std.testing.expectEqual(2, shape[0]);
@@ -61,7 +61,7 @@ test "2x3x4" {
     const shape = [_]usize{ 2, 3, 4 };
 
     var subscripts = [_]usize{ 0, 0, 0 };
-    var index: usize = try sub2ind(&shape, &subscripts);
+    var index: usize = try sub2idx(&shape, &subscripts);
     try std.testing.expectEqual(0, index);
     try std.testing.expectEqual(1, x[index]);
     try std.testing.expectEqual(2, shape[0]);
@@ -72,7 +72,7 @@ test "2x3x4" {
     try std.testing.expectEqual(0, subscripts[2]);
 
     subscripts = [_]usize{ 1, 2, 3 };
-    index = try sub2ind(&shape, &subscripts);
+    index = try sub2idx(&shape, &subscripts);
     try std.testing.expectEqual(23, index);
     try std.testing.expectEqual(24, x[index]);
     try std.testing.expectEqual(2, shape[0]);
@@ -83,7 +83,7 @@ test "2x3x4" {
     try std.testing.expectEqual(3, subscripts[2]);
 
     subscripts = [_]usize{ 1, 1, 0 };
-    index = try sub2ind(&shape, &subscripts);
+    index = try sub2idx(&shape, &subscripts);
     try std.testing.expectEqual(16, index);
     try std.testing.expectEqual(17, x[index]);
     try std.testing.expectEqual(2, shape[0]);
@@ -99,7 +99,7 @@ test "1x6" {
     const shape = [_]usize{ 1, 6 };
 
     const subs = [_]usize{ 0, 3 };
-    const index: usize = try sub2ind(&shape, &subs);
+    const index: usize = try sub2idx(&shape, &subs);
     try std.testing.expectEqual(3, index);
     try std.testing.expectEqual(4, x[index]);
     try std.testing.expectEqual(1, shape[0]);
@@ -112,16 +112,16 @@ test "2x2" {
     const x = [_]u32{ 2, 4, 6, 8 };
     const shape = [_]usize{ 2, 2 };
 
-    const index: usize = try sub2ind(&shape, &.{ 0, 0 });
+    const index: usize = try sub2idx(&shape, &.{ 0, 0 });
     try std.testing.expectEqual(0, index);
     try std.testing.expectEqual(2, x[index]);
 }
 
 test "errors" {
     // test dims and inds mismatch length
-    var result = sub2ind(&.{ 0, 0 }, &.{ 0, 0, 0 });
+    var result = sub2idx(&.{ 0, 0 }, &.{ 0, 0, 0 });
     try std.testing.expectError(Error.Shape, result);
 
-    result = sub2ind(&.{ 2, 3 }, &.{ 2, 3 });
+    result = sub2idx(&.{ 2, 3 }, &.{ 2, 3 });
     try std.testing.expectError(Error.OutOfBounds, result);
 }

@@ -1,9 +1,9 @@
 const std = @import("std");
 
-const Error = @import("errors.zig").LinalgError;
+const Error = @import("errors.zig").Error;
 
 pub fn sum(comptime T: type, items: []const T, shape: ?[]const usize, dim: ?usize) Error!T {
-    // TODO: add ability to sum along a givin dimension
+    // TODO: add ability to sum along a given dimension
     _ = shape;
     _ = dim;
 
