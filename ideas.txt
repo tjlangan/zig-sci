@@ -1,0 +1,48 @@
+Matrix
+	- Determinant
+	- Rank 
+	- Power
+	- Inverse
+	- Eigen
+	- Ax = b
+	- elementwise trig/log/exp functions
+	- Linear Systems of Eqns
+	- N-dimensional stuff 
+	- To / From file (csv, txt) 
+	- easier getters/setters
+	- Dot / Cross products 
+	- range or linspace initialization
+	- comparisons (lt, gt, eq, ...)
+		- will return a either a smaller matrix of those that fullfill the condition or a logical of the same size 
+		- if logical will need a way to get the values that fullfill 
+
+
+Calculus
+	- Integration
+	- root finding
+	- min/max finding
+	- ODEs 
+	- Interpolation
+
+Signals 
+	- Create
+	- Read / Write wav files
+	- FFT / IFFT / FFTSHIFT
+	- Convolution
+	- Filtering
+
+Plotting
+	- ???????
+	- this sounds annoying
+
+Physics Constants
+	- Speed of Light 
+	- Boltzman
+	- Gravitational 
+	- Avagadro's
+	- unit conversiono
+
+General 
+	- more error handling and type checking
+	- implement matrix functions into the matrix type
+	- documentation
