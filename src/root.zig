@@ -1,6 +1,6 @@
 const std = @import("std");
 
-pub const linalg = @import("linalg/linalg.zig");
+pub const linearAlgebra = @import("linear-algebra/linearAlgebra.zig");
 
 test {
     std.testing.refAllDeclsRecursive(@This());
