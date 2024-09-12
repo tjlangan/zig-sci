@@ -22,6 +22,8 @@ Calculus
 	- root finding
 	- min/max finding
 	- ODEs 
+		- Euler / Runge-Kutta 
+	- PDEs 
 	- Interpolation
 
 Signals 
@@ -34,6 +36,11 @@ Signals
 Plotting
 	- ???????
 	- this sounds annoying
+	- Maybe a wrapper around matplotlib? can i directly import matplollib.h?
+
+Chemisty
+	- Periodic Table
+	- Equation Balancing 
 
 Physics Constants
 	- Speed of Light 
