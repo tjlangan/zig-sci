@@ -3,4 +3,6 @@ pub const Error = error{
     Allocation,
     Shape,
     OutOfBounds,
+    NotSquare,
+    Degenerate,
 };
