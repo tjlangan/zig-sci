@@ -1,113 +1,104 @@
-const std = @import("std");
-const Allocator = std.mem.Allocator;
+// https://en.wikipedia.org/wiki/LU_decomposition
 
-// LU
+const std = @import("std");
 
 const Error = @import("errors.zig").Error;
 const sub2idx = @import("sub2idx.zig").sub2idx;
 const at =  @import("at.zig").at; 
 
-pub fn decompose(comptime T: type, allocator: Allocator, M: []T, shape: []const usize, tol: f64) Error![]usize {
+pub fn decompose(comptime T: type, A: []T, shape: []const usize, P: []usize, tol: f64) Error!void {
     if (shape.len != 2) return Error.Shape;
     if (shape[0] != shape[1]) return Error.NotSquare;
+    if (P.len != shape[0] + 1) return Error.Shape; 
 
     const N = shape[0];
-    const P = allocator.alloc(usize, N) catch return Error.Allocation;
+    
+    var absA: T = undefined; 
+    var maxA: T = undefined;
+    var imax: usize = undefined;
 
+    var tmp_val: T = undefined; 
+    var tmp_idx: usize = undefined; 
+    var ptr: *T = undefined; 
 
-    for (0..N) |ii| {
+    for (0..N+1) |ii| {
         P[ii] = ii;
     }
 
     for (0..N) |ii| {
-        var abs_M: T = 0;
-        var max_M: T = 0;
-        var idx_max: usize = ii;
+        maxA = 0;
+        imax = ii; 
 
         for (ii..N) |kk| {
-            const idx = try sub2idx(shape, &.{ kk, ii });
-            abs_M = @abs(M[idx]);
+            ptr = try at(T, A, shape, &[_]usize{kk, ii}); 
+            absA = @abs(ptr.*); 
 
-            if (abs_M > max_M) {
-                max_M = abs_M;
-                idx_max = kk;
+            if (absA > maxA) {
+                maxA = absA;
+                imax = kk;
             }
         }
 
-        const max_M_f64: f64 = switch (@typeInfo(T)) {
-            .Float => @floatCast(max_M),
-            .Int => @floatFromInt(max_M),
+        const maxA_f64: f64 = switch (@typeInfo(T)) {
+            .Float => @floatCast(maxA),
+            .Int => @floatFromInt(maxA),
             else => return Error.Unimplemented,
         };
 
-        if (max_M_f64 < tol) return Error.Degenerate;
+        if (maxA_f64 < tol) return Error.Degenerate;
 
-        if (idx_max != ii) {
-            const tmp: usize = P[ii];
-            P[ii] = idx_max;
-            P[idx_max] = tmp;
+        if (imax != ii) {
+            tmp_idx = P[ii];
+            P[ii] = P[imax];
+            P[imax] = tmp_idx; 
 
-            //const row_start = []usize{ ii, 0 };
-            //const row_end = []usize{ ii, shape[1] - 1 };
-
-            //const row_start_idx = try sub2idx(shape, row_start);
-            //const row_end_idx = try sub2idx(shape, row_end);
-
-            //_ = row_start_idx;
-            //_ = row_end_idx;
-
-            const row_a = [_]usize{ ii, 0 };
-            const row_b = [_]usize{ idx_max, 0 };
-
-            const row_a_idx = try sub2idx(shape, &row_a);
-            const row_b_idx = try sub2idx(shape, &row_b);
-
-            for (0..shape[1]) |offset| {
-                const tmp2: T = M[row_a_idx + offset];
-                M[row_a_idx + offset] = M[row_b_idx + offset];
-                M[row_b_idx + offset] = tmp2;
+            for (0..N) |col| {
+                const ii_ptr = try at(T, A, shape, &[_]usize{ii, col});
+                const imax_ptr: *T = try at(T, A, shape, &[_]usize{imax, col}); 
+                
+                tmp_val = ii_ptr.*; 
+                ii_ptr.* = imax_ptr.*; 
+                imax_ptr.* = tmp_val;  
             }
 
             P[N] += 1; 
         }
 
         for (ii+1..N) |jj| {
-            const sub_jj_ii = [_]usize{ jj, ii}; 
-            const sub_ii_ii = [_]usize{ ii, ii}; 
+            const A_jj_ii_ptr = try at(T, A, shape, &[_]usize{jj, ii}); 
+            const A_ii_ii_ptr = try at(T, A, shape, &[_]usize{ii, ii}); 
 
-            const M_jj_ii_ptr = try at(T, M, shape, &sub_jj_ii); 
-            const M_ii_ii_ptr = try at(T, M, shape, &sub_ii_ii); 
-
-            M_jj_ii_ptr.* /= M_ii_ii_ptr.*; 
+            A_jj_ii_ptr.* /= A_ii_ii_ptr.*; 
 
             for (ii+1..N) |kk| {
-                const sub_jj_kk = [_]usize{ jj, kk}; 
-                const sub_ii_kk = [_]usize{ ii, kk}; 
+                const A_jj_kk_ptr = try at(T, A, shape, &[_]usize{jj, kk}); 
+                const A_ii_kk_ptr = try at(T, A, shape, &[_]usize{ii, kk}); 
 
-                const M_jj_kk_ptr = try at(T, M, shape, &sub_jj_kk); 
-                const M_ii_kk_ptr = try at(T, M, shape, &sub_ii_kk); 
-
-                M_jj_kk_ptr.* -= M_jj_ii_ptr.* * M_ii_kk_ptr.*; 
+                A_jj_kk_ptr.* -= A_jj_ii_ptr.* * A_ii_kk_ptr.*; 
             }
         }
     }
-
-    return P; 
 }
 
 
 test "1.1" {
-    const allocator = std.testing.allocator;
 
-    var data = [_]f64{4, 3, 6, 3}; 
+    var A = [_]f64{4, 3, 6, 3}; 
     const shape = [_]usize{2,2};
+    var P = [_]usize{0} ** 3; 
     const tol: f64 = 0.01; 
 
-    const P = try decompose(f64, allocator, &data, &shape, tol); 
-    defer allocator.free(P); 
+    try decompose(f64, &A, &shape, &P, tol); 
 
-    for (0..data.len) |ii| {
-        std.debug.print("{}\n", .{data[ii]});    
-    }
+    
+    //for (0..data.len) |ii| {
+    //    std.debug.print("{}\n", .{data[ii]});    
+    //}
+
+    //std.debug.print("\n", .{}); 
+
+    //for (0..P.len) |ii| {
+    //    std.debug.print("{}\n", .{P[ii]}); 
+    //}
 
 }
