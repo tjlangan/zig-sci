@@ -32,7 +32,6 @@ pub fn Matrix(comptime T: type) type {
         }
 
         pub fn from(allocator: Allocator, data: []const T, shape: []const usize) Error!Self {
-            // make prod and sum of slice a function
             const cap = shape2cap(shape);
 
             if (cap != data.len) {
