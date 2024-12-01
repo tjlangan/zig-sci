@@ -19,6 +19,7 @@ pub const shape2cap = @import("shape2cap.zig").shape2cap;
 pub const sub2idx = @import("sub2idx.zig").sub2idx;
 pub const sum = @import("sum.zig").sum;
 pub const decompose = @import("decompose.zig").decompose;
+pub const inverse = @import("inverse.zig").inverse; 
 
 test {
     std.testing.refAllDeclsRecursive(@This());

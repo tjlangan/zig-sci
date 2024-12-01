@@ -28,7 +28,7 @@ pub fn determinant(comptime T: type, A: []T, shape: []const usize, P: []usize) E
     }
 }
 
-test "1.1" {
+test "decompose 2x2" {
     var A = [_]f64{ 4, 3, 6, 3 };
     const shape = [_]usize{ 2, 2 };
     var P = [_]usize{0} ** 3;
@@ -40,7 +40,7 @@ test "1.1" {
     try std.testing.expectEqual(-6, det);
 }
 
-test "1.2" {
+test "decompose 3x3" {
     var A = [_]f64{ 1, 2, 3, 3, 2, 1, 2, 1, 3 };
     const shape = [_]usize{ 3, 3 };
     var P = [_]usize{0} ** 4;
