@@ -13,8 +13,8 @@ Matrix
 	- Dot / Cross products 
 	- range or linspace initialization
 	- comparisons (lt, gt, eq, ...)
-		- will return a either a smaller matrix of those that fullfill the condition or a logical of the same size 
-		- if logical will need a way to get the values that fullfill 
+		- will return a either a smaller matrix of those that fulfill the condition or a logical of the same size 
+		- if logical will need a way to get the values that fulfill 
 
 
 Calculus
@@ -34,12 +34,13 @@ Signals
 	- Filtering
 
 Plotting
-	- ???????
 	- this sounds annoying
-	- Maybe a wrapper around matplotlib? can i directly import matplollib.h?
+        - look for existing C lib that can be imported 
 
 Chemisty
 	- Periodic Table
+            - Every element is a struct with their properties as fields. 
+            - Write directly or load in config file?
 	- Equation Balancing 
 
 Physics Constants
@@ -52,4 +53,4 @@ Physics Constants
 General 
 	- more error handling and type checking
 	- implement matrix functions into the matrix type
-	- documentation
+	- documentation 
