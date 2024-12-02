@@ -2,7 +2,6 @@ const std = @import("std");
 
 const Error = @import("errors.zig").Error; 
 const at = @import("at.zig").at; 
-const decompose = @import("decompose.zig").decompose; 
 
 
 pub fn inverse(comptime T: type, A: []T, shape: []const usize, P: []usize, IA: []T) Error!void {
@@ -59,6 +58,8 @@ pub fn inverse(comptime T: type, A: []T, shape: []const usize, P: []usize, IA: [
 
 
 test "inverse 2x2" {
+    const decompose = @import("decompose.zig").decompose; 
+    
     var A = [_]f64{3, 5, 7, 9}; 
     const shape = [_]usize{2,2}; 
     var P = [_]usize{0} ** (shape[0]+1); 
@@ -80,6 +81,7 @@ test "inverse 2x2" {
 
 
 test "inverse 3x3" {
+    const decompose = @import("decompose.zig").decompose; 
 
     var A = [_]f64{1,6,7,6,8,10,3,5,0}; 
     const shape = [_]usize{3,3}; 

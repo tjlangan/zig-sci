@@ -2,7 +2,6 @@ const std = @import("std");
 
 const Error = @import("errors.zig").Error; 
 const at = @import("at.zig").at; 
-const decompose = @import("decompose.zig").decompose; 
 
 
 pub fn solve(comptime T: type, A: []T, shape: []const usize, P: []usize, b: []T, x: []T) Error!void {
@@ -44,6 +43,8 @@ pub fn solve(comptime T: type, A: []T, shape: []const usize, P: []usize, b: []T,
 }
 
 test "solve 2x2" {
+    const decompose = @import("decompose.zig").decompose; 
+    
     var A = [_]f64{1, 1, 2, 1}; 
     const shape = [_]usize{2,2}; 
     var P = [_]usize{0} ** (shape[0] + 1); 
@@ -65,6 +66,8 @@ test "solve 2x2" {
 
 
 test "solve 3x3" {
+    const decompose = @import("decompose.zig").decompose; 
+    
     var A = [_]f64{-1, -11, -3, 1, 1, 0, 2, 5, 1}; 
     const shape = [_]usize{3,3}; 
     var P = [_]usize{0} ** (shape[0] + 1); 
