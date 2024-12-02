@@ -3,14 +3,21 @@ const Allocator = std.mem.Allocator;
 
 const Error = @import("errors.zig").Error;
 
-const _at = @import("at.zig").at; 
-const decompose = @import("decompose.zig").decompose; 
-const determinant = @import("determinant.zig").determinant;
-const fill = @import("fill.zig").fill;
-const inverse = @import("inverse.zig").inverse; 
-const matrixMult = @import("matrixMult.zig").matrixMult; 
-const shape2cap = @import("shape2cap.zig").shape2cap;
-const sub2idx = @import("sub2idx.zig").sub2idx;
+const _at       = @import("at.zig").at; 
+const _dec      = @import("decompose.zig").decompose; 
+const _det      = @import("determinant.zig").determinant;
+const _fill     = @import("fill.zig").fill;
+const _inv      = @import("inverse.zig").inverse; 
+const _matmult  = @import("matrixMult.zig").matrixMult;
+const _prod     = @import("prod.zig").prod;  
+const _add     = @import("scalarAdd.zig").scalarAdd;
+const _div     = @import("scalarDiv.zig").scalarDiv;  
+const _mult    = @import("scalarMult.zig").scalarMult; 
+const _subt    = @import("scalarSubt.zig").scalarSubt; 
+const _shape2cap    = @import("shape2cap.zig").shape2cap;
+const _sub2idx      = @import("sub2idx.zig").sub2idx;
+const _sum     = @import("sum.zig").sum; 
+const _solve   = @import("solve.zig").solve; 
 
 pub fn Matrix(comptime T: type) type {
     return struct {
@@ -40,7 +47,7 @@ pub fn Matrix(comptime T: type) type {
         }
 
         pub fn from(allocator: Allocator, data: []const T, shape: []const usize) Error!Self {
-            const cap = shape2cap(shape);
+            const cap = _shape2cap(shape);
 
             if (cap != data.len) {
                 return Error.Shape;
@@ -65,7 +72,7 @@ pub fn Matrix(comptime T: type) type {
         pub fn zeros(allocator: Allocator, shape: []const usize) Error!Self {
             const matrix = try init(allocator, shape);
 
-            fill(T, matrix.data, 0);
+            _fill(T, matrix.data, 0);
 
             return matrix;
         }
@@ -73,7 +80,7 @@ pub fn Matrix(comptime T: type) type {
         pub fn ones(allocator: Allocator, shape: []const usize) Error!Self {
             const matrix = try init(allocator, shape);
 
-            fill(T, matrix.data, 1);
+            _fill(T, matrix.data, 1);
 
             return matrix;
         }
@@ -82,7 +89,7 @@ pub fn Matrix(comptime T: type) type {
             const matrix = try zeros(allocator, &.{ n, n });
 
             for (0..n) |ii| {
-                const idx = try sub2idx(matrix.shape, &.{ ii, ii });
+                const idx = try _sub2idx(matrix.shape, &.{ ii, ii });
 
                 matrix.data[idx] = 1;
             }
@@ -95,7 +102,7 @@ pub fn Matrix(comptime T: type) type {
         }
 
         pub fn det(self: Self) Error!T {
-            const cap = shape2cap(self.shape); 
+            const cap = _shape2cap(self.shape); 
 
             const A = self.allocator.alloc(T, cap) catch return Error.Allocation; 
             defer self.allocator.free(A); 
@@ -106,14 +113,14 @@ pub fn Matrix(comptime T: type) type {
 
             const tol: f64 = 1e-3; 
 
-            try decompose(T, A, self.shape, P, tol); 
-            const val = try determinant(T, A, self.shape, P); 
+            try _dec(T, A, self.shape, P, tol); 
+            const val = try _det(T, A, self.shape, P); 
 
             return val; 
         }
 
         pub fn inv(self: Self) Error!Self {
-            const cap = shape2cap(self.shape); 
+            const cap = _shape2cap(self.shape); 
 
             const A = self.allocator.alloc(T, cap) catch return Error.Allocation; 
             defer self.allocator.free(A); 
@@ -124,18 +131,38 @@ pub fn Matrix(comptime T: type) type {
 
             const tol: f64 = 1e-3; 
 
-            try decompose(T, A, self.shape, P, tol); 
+            try _dec(T, A, self.shape, P, tol); 
 
             const IA = self.allocator.alloc(T, cap) catch return Error.Allocation; 
             defer self.allocator.free(IA); 
-            try inverse(T, A, self.shape, P, IA); 
+            try _inv(T, A, self.shape, P, IA); 
 
             return Self.from(self.allocator, IA, self.shape); 
+        }
+
+        pub fn solve(self: Self, b: Self) Error!Self {
+            const cap = _shape2cap(self.shape); 
+
+            const A = self.allocator.alloc(T, cap) catch return Error.Allocation;
+            defer self.allocator.free(A);
+            @memcpy(A, self.data); 
+
+            const P = self.allocator.alloc(usize, self.shape[0] + 1) catch return Error.Allocation; 
+            defer self.allocator.free(P); 
+
+            const tol: f64 = 1e-3;
+            try _dec(T, A, self.shape, P, tol); 
+
+            const x = self.allocator.alloc(T, b.shape[0]) catch return Error.Allocation; 
+            defer self.allocator.free(x); 
+            try _solve(T, A, self.shape, P, b.data, x); 
+
+            return Self.from(self.allocator, x, b.shape); 
 
         }
 
-        pub fn mult(self: Self, other: Self) Error!Self {
-            const new_data = try matrixMult(T, self.allocator, self.data, self.shape, other.data, other.shape); 
+        pub fn matmult(self: Self, other: Self) Error!Self {
+            const new_data = try _matmult(T, self.allocator, self.data, self.shape, other.data, other.shape); 
             defer self.allocator.free(new_data); 
             
             const new_mat = try Self.from(self.allocator, new_data, &[_]usize{self.shape[0], other.shape[1]}); 
@@ -143,16 +170,30 @@ pub fn Matrix(comptime T: type) type {
             return new_mat; 
         }
 
+        pub fn add(self: Self, value: T) void {
+            return _add(T, self.data, value);  
+        }
 
-        // NEED TO IMPLEMENT
-        // matrix mult
-        // scalar add
-        // scalar subt
-        // scalar mult
-        // scalar div
-        // sum 
-        // prod
-        // solve
+        pub fn subt(self: Self, value: T) void {
+            return _subt(T, self.data, value); 
+        }
+
+        pub fn mult(self: Self, value: T) void {
+            return _mult(T, self.data, value); 
+        }
+
+        pub fn div(self: Self, value: T) void {
+            return _div(T, self.data, value); 
+        }
+
+        pub fn sum(self: Self, dim: ?usize) Error!T {
+            return _sum(T, self.data, self.shape, dim); 
+        }
+
+        pub fn prod(self: Self, dim: ?usize) Error!T {
+            return _prod(T, self.data, self.shape, dim); 
+        }
+
     };
 }
 
@@ -296,7 +337,25 @@ test "inverse" {
     try std.testing.expect(std.math.approxEqAbs(f64, -3.0/14.0, imat.data[3], 1e-6)); 
 }
 
-test "matrix mult" {
+test "solve" {
+    const allocator = std.testing.allocator; 
+
+    const A_data = [_]f64{1, 1, 2, 1};
+    const A = try Matrix(f64).from(allocator, &A_data, &[_]usize{2,2}); 
+    defer A.deinit(); 
+
+    const b_data = [_]f64{0, 1}; 
+    const b = try Matrix(f64).from(allocator, &b_data, &[_]usize{2,1}); 
+    defer b.deinit();
+
+    const x = try A.solve(b); 
+    defer x.deinit(); 
+
+    try std.testing.expect(std.math.approxEqAbs(f64, 1, x.data[0], 1e-6)); 
+    try std.testing.expect(std.math.approxEqAbs(f64, -1, x.data[1], 1e-6)); 
+}
+
+test "matrix multiply" {
     const allocator = std.testing.allocator; 
 
     const A = try Matrix(f64).from(allocator, &[_]f64{1,2,3,4,5,6}, &[_]usize{2,3}); 
@@ -305,7 +364,7 @@ test "matrix mult" {
     const B = try Matrix(f64).from(allocator, &[_]f64{7,8,9,10,11,12}, &[_]usize{3,2}); 
     defer B.deinit(); 
 
-    const C = try A.mult(B); 
+    const C = try A.matmult(B); 
     defer C.deinit(); 
 
     try std.testing.expectEqual(2, C.shape[0]);
@@ -316,4 +375,84 @@ test "matrix mult" {
     try std.testing.expectEqual(64, C.data[1]);
     try std.testing.expectEqual(139, C.data[2]);
     try std.testing.expectEqual(154, C.data[3]);
+}
+
+test "add" {
+    const allocator = std.testing.allocator; 
+
+    const mat = try Matrix(u32).from(allocator, &[_]u32{1, 2, 3, 4}, &[_]usize{1, 4}); 
+    defer mat.deinit(); 
+
+    mat.add(10); 
+
+    try std.testing.expectEqual(11, mat.data[0]);
+    try std.testing.expectEqual(12, mat.data[1]);
+    try std.testing.expectEqual(13, mat.data[2]);
+    try std.testing.expectEqual(14, mat.data[3]); 
+}
+
+test "subtract" {
+    const allocator = std.testing.allocator; 
+
+    const mat = try Matrix(u32).from(allocator, &[_]u32{11, 12, 13, 14}, &[_]usize{1, 4}); 
+    defer mat.deinit(); 
+
+    mat.subt(10); 
+
+    try std.testing.expectEqual(1, mat.data[0]);
+    try std.testing.expectEqual(2, mat.data[1]);
+    try std.testing.expectEqual(3, mat.data[2]);
+    try std.testing.expectEqual(4, mat.data[3]); 
+} 
+
+test "multiply" {
+    const allocator = std.testing.allocator; 
+
+    const mat = try Matrix(u32).from(allocator, &[_]u32{1, 2, 3, 4}, &[_]usize{1, 4}); 
+    defer mat.deinit(); 
+
+    mat.mult(10); 
+
+    try std.testing.expectEqual(10, mat.data[0]);
+    try std.testing.expectEqual(20, mat.data[1]);
+    try std.testing.expectEqual(30, mat.data[2]);
+    try std.testing.expectEqual(40, mat.data[3]); 
+
+}
+
+test "divide" {
+    const allocator = std.testing.allocator; 
+
+    const mat = try Matrix(u32).from(allocator, &[_]u32{10, 20, 30, 40}, &[_]usize{1, 4}); 
+    defer mat.deinit(); 
+
+    mat.div(10); 
+
+    try std.testing.expectEqual(1, mat.data[0]);
+    try std.testing.expectEqual(2, mat.data[1]);
+    try std.testing.expectEqual(3, mat.data[2]);
+    try std.testing.expectEqual(4, mat.data[3]); 
+
+}
+
+test "sum" {
+    const allocator = std.testing.allocator; 
+
+    const mat = try Matrix(u32).from(allocator, &[_]u32{1, 2, 3, 4}, &[_]usize{1,4}); 
+    defer mat.deinit(); 
+
+    const s = try mat.sum(null);
+
+    try std.testing.expectEqual(10, s);  
+}
+
+test "prod" {
+    const allocator = std.testing.allocator; 
+
+    const mat = try Matrix(u32).from(allocator, &[_]u32{1, 2, 3, 4}, &[_]usize{1,4}); 
+    defer mat.deinit(); 
+
+    const p = try mat.prod(null);
+
+    try std.testing.expectEqual(24, p);  
 }

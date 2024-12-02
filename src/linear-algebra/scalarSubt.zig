@@ -1,11 +1,6 @@
 const std = @import("std");
 
-const Error = @import("errors.zig").Error;
-
-pub fn scalarSubt(comptime T: type, items: []T, value: T, shape: ?[]const usize, dim: ?usize) Error!void {
-    _ = shape;
-    _ = dim;
-
+pub fn scalarSubt(comptime T: type, items: []T, value: T) void {
     for (items) |*elem| {
         elem.* -= value;
     }
@@ -14,7 +9,7 @@ pub fn scalarSubt(comptime T: type, items: []T, value: T, shape: ?[]const usize,
 test "scalarAdd" {
     var nums: [6]u32 = [_]u32{ 11, 12, 13, 14, 15, 16 };
 
-    try scalarSubt(u32, &nums, 10, null, null);
+    scalarSubt(u32, &nums, 10);
 
     try std.testing.expectEqual(1, nums[0]);
     try std.testing.expectEqual(2, nums[1]);
@@ -33,7 +28,7 @@ test "scalarAdd" {
     nums2[4] = 510;
     nums2[5] = 610;
 
-    try scalarSubt(u32, nums2, 10, null, null);
+    scalarSubt(u32, nums2, 10);
 
     try std.testing.expectEqual(100, nums2[0]);
     try std.testing.expectEqual(200, nums2[1]);

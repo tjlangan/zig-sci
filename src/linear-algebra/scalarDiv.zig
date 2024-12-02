@@ -1,11 +1,6 @@
 const std = @import("std");
 
-const Error = @import("errors.zig").Error;
-
-pub fn scalarDiv(comptime T: type, items: []T, value: T, shape: ?[]const usize, dim: ?usize) Error!void {
-    _ = shape;
-    _ = dim;
-
+pub fn scalarDiv(comptime T: type, items: []T, value: T) void {
     for (items) |*elem| {
         elem.* /= value;
     }
@@ -14,7 +9,7 @@ pub fn scalarDiv(comptime T: type, items: []T, value: T, shape: ?[]const usize, 
 test "scalarMult" {
     var nums: [6]u32 = [_]u32{ 6, 12, 18, 24, 30, 36 };
 
-    try scalarDiv(u32, &nums, 6, null, null);
+    scalarDiv(u32, &nums, 6);
 
     try std.testing.expectEqual(1, nums[0]);
     try std.testing.expectEqual(2, nums[1]);

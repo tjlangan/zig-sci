@@ -1,11 +1,6 @@
 const std = @import("std");
 
-const Error = @import("errors.zig").Error;
-
-pub fn scalarMult(comptime T: type, items: []T, value: T, shape: ?[]const usize, dim: ?usize) Error!void {
-    _ = shape;
-    _ = dim;
-
+pub fn scalarMult(comptime T: type, items: []T, value: T) void {
     for (items) |*elem| {
         elem.* *= value;
     }
@@ -14,7 +9,7 @@ pub fn scalarMult(comptime T: type, items: []T, value: T, shape: ?[]const usize,
 test "scalarMult" {
     var nums: [6]u32 = [_]u32{ 1, 2, 3, 4, 5, 6 };
 
-    try scalarMult(u32, &nums, 6, null, null);
+    scalarMult(u32, &nums, 6);
 
     try std.testing.expectEqual(6, nums[0]);
     try std.testing.expectEqual(12, nums[1]);
